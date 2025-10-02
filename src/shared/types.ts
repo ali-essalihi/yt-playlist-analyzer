@@ -4,3 +4,7 @@ export interface LimitsResData {
   maxFetches: number
   maxVideosPerFetch: number
 }
+
+export interface ApiErrorResData {
+  message: string
+}

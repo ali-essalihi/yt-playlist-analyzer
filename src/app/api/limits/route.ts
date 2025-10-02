@@ -5,17 +5,22 @@ import {
   generatePlaylistFetchLimiterKey,
   getPlaylistFetchUsage,
 } from '@/server/utils'
+import ApiError from '@/server/ApiError'
 
 export async function GET(req: NextRequest) {
-  const key = generatePlaylistFetchLimiterKey(req)
-  const usage = await getPlaylistFetchUsage(key)
+  try {
+    const key = generatePlaylistFetchLimiterKey(req)
+    const usage = await getPlaylistFetchUsage(key)
 
-  const data: LimitsResData = {
-    fetchesUsed: usage.fetchesUsed,
-    fetchesRemaining: usage.fetchesRemaining,
-    maxFetches: PLAYLIST_FETCH_LIMITS.MAX_FETCHES,
-    maxVideosPerFetch: PLAYLIST_FETCH_LIMITS.MAX_VIDEOS_PER_FETCH,
+    const data: LimitsResData = {
+      fetchesUsed: usage.fetchesUsed,
+      fetchesRemaining: usage.fetchesRemaining,
+      maxFetches: PLAYLIST_FETCH_LIMITS.MAX_FETCHES,
+      maxVideosPerFetch: PLAYLIST_FETCH_LIMITS.MAX_VIDEOS_PER_FETCH,
+    }
+
+    return Response.json(data)
+  } catch (err) {
+    return ApiError.unexpected().getResponse()
   }
-
-  return Response.json(data)
 }
