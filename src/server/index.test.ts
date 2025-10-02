@@ -1,10 +1,11 @@
 import type { NextRequest } from 'next/server'
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import * as utils from '@/server/utils'
 import * as limitsRoute from '@/app/api/limits/route'
 import { PLAYLIST_FETCH_LIMITS } from './constants'
 import { playlistFetchLimiter } from './ratelimiter'
 import { RateLimiterRes } from 'rate-limiter-flexible'
+import YoutubeAPIClient, { YouTubeApiError } from './youtube.client'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -76,6 +77,54 @@ describe('Route Handlers', () => {
         maxFetches: PLAYLIST_FETCH_LIMITS.MAX_FETCHES,
         maxVideosPerFetch: PLAYLIST_FETCH_LIMITS.MAX_VIDEOS_PER_FETCH,
       })
+    })
+  })
+})
+
+describe('Youtube API Client', () => {
+  const mockApiKey = 'TEST_KEY'
+  let client: YoutubeAPIClient
+
+  beforeEach(() => {
+    client = new YoutubeAPIClient(mockApiKey)
+  })
+
+  describe('fetchData', () => {
+    it('returns data on success', async () => {
+      const mockData = { kind: 'youtube#playlistListResponse' }
+      const mockResource = 'playlists'
+      const mockParams = new URLSearchParams({
+        maxResults: '50',
+        part: 'snippet',
+      })
+      const fetchMock = vi
+        .spyOn(global, 'fetch')
+        .mockResolvedValue({ ok: true, json: async () => mockData } as Response)
+
+      // @ts-ignore
+      const data = await client.fetchData(mockResource, mockParams)
+      expect(fetchMock).toHaveBeenCalledOnce()
+      expect(data).toBe(mockData)
+
+      const urlArg = new URL(fetchMock.mock.calls[0][0] as string)
+      expect(urlArg.origin + urlArg.pathname).toBe(
+        `https://www.googleapis.com/youtube/v3/${mockResource}`
+      )
+      expect(urlArg.searchParams.get('key')).toBe(mockApiKey)
+      expect(urlArg.searchParams.get('part')).toBe('snippet')
+      expect(urlArg.searchParams.get('maxResults')).toBe('50')
+    })
+
+    it('throws YouTubeApiError on failure', async () => {
+      const mockError = { error: { code: 400, message: 'Invalid API key' } }
+      vi.spyOn(global, 'fetch').mockResolvedValue({
+        ok: false,
+        json: async () => mockError,
+      } as Response)
+      await expect(
+        // @ts-ignore
+        client.fetchData('playlists', new URLSearchParams())
+      ).rejects.toThrow(YouTubeApiError)
     })
   })
 })
