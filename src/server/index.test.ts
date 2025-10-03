@@ -6,6 +6,7 @@ import { PLAYLIST_FETCH_LIMITS } from './constants'
 import { playlistFetchLimiter } from './ratelimiter'
 import { RateLimiterRes } from 'rate-limiter-flexible'
 import YoutubeAPIClient, { YouTubeApiError } from './youtube.client'
+import YoutubeService from './youtube.service'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -125,6 +126,175 @@ describe('Youtube API Client', () => {
         // @ts-ignore
         client.fetchData('playlists', new URLSearchParams())
       ).rejects.toThrow(YouTubeApiError)
+    })
+  })
+})
+
+describe('Youtube API Service', () => {
+  const mockApiKey = 'TEST_KEY'
+  let client: YoutubeAPIClient
+  let service: YoutubeService
+
+  beforeEach(() => {
+    client = new YoutubeAPIClient(mockApiKey)
+    service = new YoutubeService(client)
+  })
+
+  describe('fetchPlaylistMetadata', () => {
+    it('returns playlist metadata when playlist exists', async () => {
+      const mockPlaylist = {
+        id: '123',
+        snippet: {
+          title: 'My Playlist',
+          description: 'A test playlist',
+          thumbnails: { default: { url: 'http://img' } },
+          channelTitle: 'Test Channel',
+        },
+        contentDetails: {
+          itemCount: 10,
+        },
+      }
+
+      vi.spyOn(client, 'fetchPlaylists').mockResolvedValue({
+        items: [mockPlaylist],
+      } as any)
+
+      const result = await service.fetchPlaylistMetadata('123')
+
+      expect(result).toEqual({
+        id: '123',
+        title: 'My Playlist',
+        description: 'A test playlist',
+        thumbnails: { default: { url: 'http://img' } },
+        channelTitle: 'Test Channel',
+        totalVideos: 10,
+      })
+    })
+
+    it('returns null when no playlist is found', async () => {
+      vi.spyOn(client, 'fetchPlaylists').mockResolvedValue({
+        items: [],
+      } as any)
+
+      const result = await service.fetchPlaylistMetadata('not-found')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('fetchPlaylistVideos', () => {
+    it('fetches playlist videos with correct counts', async () => {
+      vi.spyOn(client, 'fetchPlaylistItems')
+        .mockResolvedValueOnce({
+          items: [
+            {
+              contentDetails: { videoId: 'vid1' },
+              status: { privacyStatus: 'public' },
+            },
+            {
+              contentDetails: { videoId: 'vid2' },
+              status: { privacyStatus: 'unlisted' },
+            },
+            {
+              contentDetails: { videoId: 'vid3' },
+              status: { privacyStatus: 'private' },
+            },
+          ],
+          nextPageToken: 'NEXT',
+        } as any)
+        .mockResolvedValueOnce({
+          items: [
+            {
+              contentDetails: { videoId: 'vid4' },
+              status: { privacyStatus: 'privacyStatusUnspecified' },
+            },
+            {
+              contentDetails: { videoId: 'vid5' },
+              status: { privacyStatus: 'public' },
+            },
+            {
+              contentDetails: { videoId: 'vid6' },
+              status: { privacyStatus: 'public' },
+            },
+          ],
+          nextPageToken: undefined,
+        } as any)
+
+      vi.spyOn(client, 'fetchVideos')
+        .mockResolvedValueOnce({
+          items: [
+            {
+              id: 'vid1',
+              snippet: {
+                title: 'Public Video',
+                channelTitle: 'Channel A',
+                liveBroadcastContent: 'none',
+              },
+              status: { uploadStatus: 'processed' },
+              contentDetails: { duration: 'PT2M10S' },
+            },
+            {
+              id: 'vid2',
+              snippet: {
+                title: 'Unlisted Video',
+                channelTitle: 'Channel A',
+                liveBroadcastContent: 'none',
+              },
+              status: { uploadStatus: 'processed' },
+              contentDetails: { duration: 'PT5M' },
+            },
+          ],
+        } as any)
+        .mockResolvedValueOnce({
+          items: [
+            {
+              id: 'vid5',
+              snippet: {
+                title: 'Live Stream',
+                channelTitle: 'Channel B',
+                liveBroadcastContent: 'live',
+              },
+              status: { uploadStatus: 'processed' },
+              contentDetails: { duration: 'PT10M' },
+            },
+            {
+              id: 'vid6',
+              snippet: {
+                title: 'Unprocessed Upload',
+                channelTitle: 'Channel B',
+                liveBroadcastContent: 'none',
+              },
+              status: { uploadStatus: 'uploaded' },
+              contentDetails: { duration: 'PT3M' },
+            },
+          ],
+        } as any)
+
+      const result = await service.fetchPlaylistVideos('playlist123')
+
+      expect(result.videosCount).toEqual({
+        available: 4,
+        private: 1,
+        deleted: 1,
+        unavailable: 2,
+        excluded: 2,
+        final: 2,
+      })
+
+      expect(result.videos).toEqual([
+        {
+          id: 'vid1',
+          title: 'Public Video',
+          channelTitle: 'Channel A',
+          durationSeconds: 130,
+        },
+        {
+          id: 'vid2',
+          title: 'Unlisted Video',
+          channelTitle: 'Channel A',
+          durationSeconds: 300,
+        },
+      ])
     })
   })
 })
