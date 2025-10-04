@@ -32,6 +32,8 @@ type Thumbnails = {
 
 type Resource = 'playlists' | 'playlistItems' | 'videos'
 
+const BASE_FIELDS = 'kind,etag,nextPageToken,prevPageToken,pageInfo'
+
 // Playlist
 
 type PlaylistResponse = YouTubeApiListResponse<{
@@ -52,8 +54,7 @@ type PlaylistResponse = YouTubeApiListResponse<{
 }>
 
 const PLAYLIST_PART = 'snippet,contentDetails'
-const PLAYLIST_FIELDS =
-  'items(id,snippet(publishedAt,channelId,title,description,thumbnails,channelTitle),contentDetails(itemCount))'
+const PLAYLIST_FIELDS = `${BASE_FIELDS},items(id,snippet(publishedAt,channelId,title,description,thumbnails,channelTitle),contentDetails(itemCount))`
 
 // PlaylistItem
 
@@ -77,8 +78,7 @@ type PlaylistItemResponse = YouTubeApiListResponse<{
 }>
 
 const PLAYLIST_ITEM_PART = 'snippet,contentDetails,status'
-const PLAYLIST_ITEM_FIELDS =
-  'items(id,snippet(position),contentDetails(videoId),status(privacyStatus))'
+const PLAYLIST_ITEM_FIELDS = `${BASE_FIELDS},items(id,snippet(position),contentDetails(videoId),status(privacyStatus))`
 
 // Video
 
@@ -103,8 +103,7 @@ type VideoResponse = YouTubeApiListResponse<{
 }>
 
 const VIDEO_PART = 'snippet,contentDetails,status'
-const VIDEO_FIELDS =
-  'items(id,snippet(publishedAt,channelId,title,thumbnails,channelTitle,liveBroadcastContent),contentDetails(duration),status(uploadStatus))'
+const VIDEO_FIELDS = `${BASE_FIELDS},items(id,snippet(publishedAt,channelId,title,thumbnails,channelTitle,liveBroadcastContent),contentDetails(duration),status(uploadStatus))`
 
 class YouTubeApiError extends Error {
   constructor(public readonly response: YouTubeApiErrorResponse) {
