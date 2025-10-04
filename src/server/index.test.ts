@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import * as utils from '@/server/utils'
 import * as limitsRoute from '@/app/api/limits/route'
+import * as playlistRoute from '@/app/api/playlist/route'
 import { PLAYLIST_FETCH_LIMITS } from './constants'
 import { playlistFetchLimiter } from './ratelimiter'
 import { RateLimiterRes } from 'rate-limiter-flexible'
@@ -58,7 +59,7 @@ describe('Utils', () => {
 })
 
 describe('Route Handlers', () => {
-  describe('GET /limits', () => {
+  describe('GET /api/limits', () => {
     it('returns 200 with correct limits data', async () => {
       const req = {} as NextRequest
       vi.spyOn(utils, 'getPlaylistFetchUsage').mockResolvedValue({
@@ -77,6 +78,195 @@ describe('Route Handlers', () => {
         fetchesRemaining: 3,
         maxFetches: PLAYLIST_FETCH_LIMITS.MAX_FETCHES,
         maxVideosPerFetch: PLAYLIST_FETCH_LIMITS.MAX_VIDEOS_PER_FETCH,
+      })
+    })
+  })
+
+  describe('GET /api/playlist', () => {
+    const mockPlaylistId = 'PLazEI_qBjqVNAexhppQEwQFP8eKgx83lN'
+    let req: NextRequest
+    const mockMetadata = {
+      id: mockPlaylistId,
+      title: 'Playlist',
+      description: '',
+      thumbnails: {},
+      channelTitle: 'Ch',
+      totalVideos: 1,
+    }
+    const mockVideosCount = {
+      available: 1,
+      unavailable: 0,
+      deleted: 0,
+      private: 0,
+      excluded: 0,
+      final: 1,
+    }
+    const mockVideos = [
+      {
+        id: 'vid1',
+        title: 'Video',
+        channelTitle: 'Ch',
+        durationSeconds: 60,
+      },
+    ]
+
+    beforeEach(() => {
+      req = {
+        nextUrl: { searchParams: new URLSearchParams({ id: mockPlaylistId }) },
+      } as NextRequest
+    })
+
+    describe('when youtube api key is provided', () => {
+      beforeEach(() => {
+        // @ts-ignore
+        req.headers = new Headers({
+          'X-Youtube-API-Key': 'USER_KEY',
+        })
+      })
+
+      it('returns 404 when playlist not found', async () => {
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistMetadata'
+        ).mockResolvedValue(null)
+
+        const res = await playlistRoute.GET(req)
+        const { message } = await res.json()
+
+        expect(res.status).toBe(404)
+        expect(message).toMatch(/playlist not found/i)
+      })
+
+      it('returns playlist data when found', async () => {
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistMetadata'
+        ).mockResolvedValue(mockMetadata as any)
+
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistVideos'
+        ).mockResolvedValue({
+          videosCount: mockVideosCount,
+          videos: mockVideos,
+        } as any)
+
+        const res = await playlistRoute.GET(req)
+        const body = await res.json()
+
+        expect(res.status).toBe(200)
+        expect(body).toMatchObject({
+          metadata: mockMetadata,
+          videosCount: mockVideosCount,
+          videos: mockVideos,
+        })
+      })
+
+      it('returns 400 when youtube api error', async () => {
+        const mockError = {
+          error: { code: 400, message: 'Invalid playlist ID' },
+        }
+
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistMetadata'
+        ).mockRejectedValue(new YouTubeApiError(mockError as any))
+
+        const res = await playlistRoute.GET(req)
+        const { message } = await res.json()
+
+        expect(res.status).toBe(400)
+        expect(message).toBe(`Youtube API Error: ${mockError.error.message}`)
+      })
+    })
+
+    describe('when youtube api key is not provided', () => {
+      beforeEach(() => {
+        // @ts-ignore
+        req.headers = new Headers()
+      })
+
+      it('returns 404 when playlist not found', async () => {
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistMetadata'
+        ).mockResolvedValue(null)
+
+        const res = await playlistRoute.GET(req)
+        const { message } = await res.json()
+
+        expect(res.status).toBe(404)
+        expect(message).toMatch(/playlist not found/i)
+      })
+
+      it('returns playlist data when found', async () => {
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistMetadata'
+        ).mockResolvedValue(mockMetadata as any)
+
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistVideos'
+        ).mockResolvedValue({
+          videosCount: mockVideosCount,
+          videos: mockVideos,
+        } as any)
+
+        const res = await playlistRoute.GET(req)
+        const body = await res.json()
+
+        expect(res.status).toBe(200)
+        expect(body).toMatchObject({
+          metadata: mockMetadata,
+          videosCount: mockVideosCount,
+          videos: mockVideos,
+        })
+      })
+
+      it('returns 422 when playlist too large', async () => {
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistMetadata'
+        ).mockResolvedValue({
+          ...mockMetadata,
+          totalVideos: PLAYLIST_FETCH_LIMITS.MAX_VIDEOS_PER_FETCH + 1,
+        } as any)
+
+        const res = await playlistRoute.GET(req)
+        const { message } = await res.json()
+
+        expect(res.status).toBe(422)
+        expect(message).toMatch(/exceeds the maximum allowed/i)
+      })
+
+      it('returns 429 when rate limit reached', async () => {
+        vi.spyOn(playlistFetchLimiter, 'consume').mockRejectedValue(
+          new RateLimiterRes()
+        )
+
+        const res = await playlistRoute.GET(req)
+        const { message } = await res.json()
+
+        expect(res.status).toBe(429)
+        expect(message).toMatch(/rate limit reached/i)
+      })
+
+      it('returns 503 when quota exceeded', async () => {
+        const mockError = {
+          error: { code: 403, errors: [{ reason: 'quotaExceeded' }] },
+        }
+
+        vi.spyOn(
+          YoutubeService.prototype,
+          'fetchPlaylistMetadata'
+        ).mockRejectedValue(new YouTubeApiError(mockError as any))
+
+        const res = await playlistRoute.GET(req)
+        const { message } = await res.json()
+
+        expect(res.status).toBe(503)
+        expect(message).toMatch(/quota has been exceeded/i)
       })
     })
   })
