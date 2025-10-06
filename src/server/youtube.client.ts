@@ -100,10 +100,13 @@ type VideoResponse = YouTubeApiListResponse<{
   status: {
     uploadStatus: 'deleted' | 'failed' | 'processed' | 'rejected' | 'uploaded'
   }
+  statistics: {
+    viewCount: string
+  }
 }>
 
-const VIDEO_PART = 'snippet,contentDetails,status'
-const VIDEO_FIELDS = `${BASE_FIELDS},items(id,snippet(publishedAt,channelId,title,thumbnails,channelTitle,liveBroadcastContent),contentDetails(duration),status(uploadStatus))`
+const VIDEO_PART = 'snippet,contentDetails,status,statistics'
+const VIDEO_FIELDS = `${BASE_FIELDS},items(id,snippet(publishedAt,channelId,title,thumbnails,channelTitle,liveBroadcastContent),contentDetails(duration),status(uploadStatus),statistics(viewCount))`
 
 class YouTubeApiError extends Error {
   constructor(public readonly response: YouTubeApiErrorResponse) {

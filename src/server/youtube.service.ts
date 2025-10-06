@@ -16,6 +16,7 @@ class YoutubeService {
     if (!playlist) return null
     return {
       id: playlist.id,
+      publishedAt: playlist.snippet.publishedAt,
       title: playlist.snippet.title,
       description: playlist.snippet.description,
       thumbnails: playlist.snippet.thumbnails,
@@ -76,11 +77,13 @@ class YoutubeService {
 
         videos.push({
           id: video.id,
+          publishedAt: video.snippet.publishedAt,
           title: video.snippet.title,
           channelTitle: video.snippet.channelTitle,
           durationSeconds: iso8601Dur.toSeconds(
             iso8601Dur.parse(video.contentDetails.duration)
           ),
+          viewCount: parseInt(video.statistics.viewCount, 10),
         })
       }
 

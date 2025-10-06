@@ -19,6 +19,7 @@ export type Thumbnails = {
 
 export interface PlaylistMetadata {
   id: string
+  publishedAt: string
   title: string
   description: string
   thumbnails: Thumbnails
@@ -28,9 +29,11 @@ export interface PlaylistMetadata {
 
 export interface PlaylistVideo {
   id: string
+  publishedAt: string
   title: string
   channelTitle: string
   durationSeconds: number
+  viewCount: number
 }
 
 export interface VideosCount {

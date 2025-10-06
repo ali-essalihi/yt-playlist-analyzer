@@ -336,6 +336,7 @@ describe('Youtube API Service', () => {
         id: '123',
         snippet: {
           title: 'My Playlist',
+          publishedAt: '2025-10-06T20:02:05Z',
           description: 'A test playlist',
           thumbnails: { default: { url: 'http://img' } },
           channelTitle: 'Test Channel',
@@ -353,6 +354,7 @@ describe('Youtube API Service', () => {
 
       expect(result).toEqual({
         id: '123',
+        publishedAt: '2025-10-06T20:02:05Z',
         title: 'My Playlist',
         description: 'A test playlist',
         thumbnails: { default: { url: 'http://img' } },
@@ -419,9 +421,11 @@ describe('Youtube API Service', () => {
                 title: 'Public Video',
                 channelTitle: 'Channel A',
                 liveBroadcastContent: 'none',
+                publishedAt: '2024-12-01T10:00:00Z',
               },
               status: { uploadStatus: 'processed' },
               contentDetails: { duration: 'PT2M10S' },
+              statistics: { viewCount: '1200' },
             },
             {
               id: 'vid2',
@@ -429,9 +433,11 @@ describe('Youtube API Service', () => {
                 title: 'Unlisted Video',
                 channelTitle: 'Channel A',
                 liveBroadcastContent: 'none',
+                publishedAt: '2024-12-05T15:30:00Z',
               },
               status: { uploadStatus: 'processed' },
               contentDetails: { duration: 'PT5M' },
+              statistics: { viewCount: '890' },
             },
           ],
         } as any)
@@ -443,9 +449,11 @@ describe('Youtube API Service', () => {
                 title: 'Live Stream',
                 channelTitle: 'Channel B',
                 liveBroadcastContent: 'live',
+                publishedAt: '2025-01-02T18:00:00Z',
               },
               status: { uploadStatus: 'processed' },
               contentDetails: { duration: 'PT10M' },
+              statistics: { viewCount: '5600' },
             },
             {
               id: 'vid6',
@@ -453,9 +461,11 @@ describe('Youtube API Service', () => {
                 title: 'Unprocessed Upload',
                 channelTitle: 'Channel B',
                 liveBroadcastContent: 'none',
+                publishedAt: '2025-01-10T09:45:00Z',
               },
               status: { uploadStatus: 'uploaded' },
               contentDetails: { duration: 'PT3M' },
+              statistics: { viewCount: '0' },
             },
           ],
         } as any)
@@ -474,15 +484,19 @@ describe('Youtube API Service', () => {
       expect(result.videos).toEqual([
         {
           id: 'vid1',
+          publishedAt: '2024-12-01T10:00:00Z',
           title: 'Public Video',
           channelTitle: 'Channel A',
           durationSeconds: 130,
+          viewCount: 1200,
         },
         {
           id: 'vid2',
+          publishedAt: '2024-12-05T15:30:00Z',
           title: 'Unlisted Video',
           channelTitle: 'Channel A',
           durationSeconds: 300,
+          viewCount: 890,
         },
       ])
     })
