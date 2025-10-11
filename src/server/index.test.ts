@@ -419,6 +419,7 @@ describe('Youtube API Service', () => {
               id: 'vid1',
               snippet: {
                 title: 'Public Video',
+                channelId: 'chanA',
                 channelTitle: 'Channel A',
                 liveBroadcastContent: 'none',
                 publishedAt: '2024-12-01T10:00:00Z',
@@ -431,6 +432,7 @@ describe('Youtube API Service', () => {
               id: 'vid2',
               snippet: {
                 title: 'Unlisted Video',
+                channelId: 'chanA',
                 channelTitle: 'Channel A',
                 liveBroadcastContent: 'none',
                 publishedAt: '2024-12-05T15:30:00Z',
@@ -447,6 +449,7 @@ describe('Youtube API Service', () => {
               id: 'vid5',
               snippet: {
                 title: 'Live Stream',
+                channelId: 'chanB',
                 channelTitle: 'Channel B',
                 liveBroadcastContent: 'live',
                 publishedAt: '2025-01-02T18:00:00Z',
@@ -459,6 +462,7 @@ describe('Youtube API Service', () => {
               id: 'vid6',
               snippet: {
                 title: 'Unprocessed Upload',
+                channelId: 'chanB',
                 channelTitle: 'Channel B',
                 liveBroadcastContent: 'none',
                 publishedAt: '2025-01-10T09:45:00Z',
@@ -484,6 +488,8 @@ describe('Youtube API Service', () => {
       expect(result.videos).toEqual([
         {
           id: 'vid1',
+          order: 1,
+          channelId: 'chanA',
           publishedAt: '2024-12-01T10:00:00Z',
           title: 'Public Video',
           channelTitle: 'Channel A',
@@ -492,6 +498,8 @@ describe('Youtube API Service', () => {
         },
         {
           id: 'vid2',
+          order: 2,
+          channelId: 'chanA',
           publishedAt: '2024-12-05T15:30:00Z',
           title: 'Unlisted Video',
           channelTitle: 'Channel A',

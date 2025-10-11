@@ -29,6 +29,8 @@ export interface PlaylistMetadata {
 
 export interface PlaylistVideo {
   id: string
+  order: number
+  channelId: string
   publishedAt: string
   title: string
   channelTitle: string

@@ -40,6 +40,7 @@ class YoutubeService {
     const videos: PlaylistVideo[] = []
 
     let nextPageToken: string | undefined
+    let order = 1
 
     do {
       const videoIds: string[] = []
@@ -77,6 +78,8 @@ class YoutubeService {
 
         videos.push({
           id: video.id,
+          order: order++,
+          channelId: video.snippet.channelId,
           publishedAt: video.snippet.publishedAt,
           title: video.snippet.title,
           channelTitle: video.snippet.channelTitle,
