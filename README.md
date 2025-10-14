@@ -13,11 +13,9 @@ A web application that provides analytics and insights for YouTube playlists to 
 
 - Next.js
 - React, TypeScript, Shadcn UI, Tailwind CSS
-- SQLite
 - YouTube Data API
 
 ## Planned Features
 
 - Duration distribution histogram
 - Per-channel contribution statistics
-- Grafana and Google Analytics integration for monitoring
