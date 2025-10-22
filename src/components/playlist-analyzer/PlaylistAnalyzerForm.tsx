@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePlaylist } from '@/providers/playlist'
 import toast from 'react-hot-toast'
 import useSWR from 'swr'
@@ -58,6 +58,12 @@ export default function PlaylistAnalyzerForm() {
   const [useApiKey, setUseApiKey] = useState(false)
   const idInputRef = useRef<HTMLInputElement | null>(null)
   const apiKeyInputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    if (apiKeyInputRef.current) {
+      apiKeyInputRef.current.value = localStorage.getItem('yt_api_key') || ''
+    }
+  }, [apiKeyInputRef])
 
   const handleCheck = (checked: boolean) => setUseApiKey(checked)
 

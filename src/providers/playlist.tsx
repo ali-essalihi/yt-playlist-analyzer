@@ -35,6 +35,8 @@ export function PlaylistProvider({ children }: { children: React.ReactNode }) {
 
   const fetchPlaylist = useCallback(
     async (id: string, apiKey?: string) => {
+      const isApiKeyUsed = typeof apiKey === 'string'
+
       if (controllerRef.current) {
         controllerRef.current.abort()
       }
@@ -52,6 +54,7 @@ export function PlaylistProvider({ children }: { children: React.ReactNode }) {
 
         const data = (await res.json()) as PlaylistResData
         setPlaylist(data)
+        if (isApiKeyUsed) localStorage.setItem('yt_api_key', apiKey)
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') {
           toast.error('Request canceled.')
