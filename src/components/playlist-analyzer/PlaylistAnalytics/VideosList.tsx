@@ -23,7 +23,7 @@ import { Virtuoso } from 'react-virtuoso'
 import { useAnalytics } from '@/providers/analytics'
 import { formatVideoDuration, formatViews } from '@/lib/utils'
 import dayjs from '@/lib/dayjs'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 
 type SortKey = 'views' | 'duration' | 'date' | 'order'
 
@@ -61,6 +61,12 @@ export default function VideosList() {
   const [sortBy, setSortBy] = useState('order_asc')
   const [search, setSearch] = useState('')
   const deferredSearch = useDeferredValue(search)
+
+  useEffect(() => {
+    setSelectedChannel('all')
+    setSortBy('order_asc')
+    setSearch('')
+  }, [playlist])
 
   const channels = useMemo(() => {
     const set = new Set()
