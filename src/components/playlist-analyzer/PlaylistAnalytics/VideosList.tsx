@@ -182,13 +182,19 @@ export default function VideosList() {
                     {video.order}
                   </span>
                   <ItemMedia className="relative">
-                    <Image
-                      src={`https://i.ytimg.com/vi/${video.id}/default.jpg`}
-                      alt=""
-                      width={120}
-                      height={90}
-                      unoptimized
-                    />
+                    <a
+                      href={`https://tube.rvere.com/embed/?v=${video.id}`}
+                      target="_blank"
+                      title="Watch video"
+                    >
+                      <Image
+                        src={`https://i.ytimg.com/vi/${video.id}/default.jpg`}
+                        alt=""
+                        width={120}
+                        height={90}
+                        unoptimized
+                      />
+                    </a>
                     <span className="absolute bottom-1 right-1 inline-block bg-black text-white text-[10px] py-0.5 px-1 font-semibold rounded-md">
                       {formatVideoDuration(video.durationSeconds)}
                     </span>
