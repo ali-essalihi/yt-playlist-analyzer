@@ -198,8 +198,9 @@ export default function VideosList() {
                       {video.title}
                     </ItemTitle>
                     <ItemDescription className="line-clamp-none text-xs">
-                      {video.channelTitle} • {formatViews(video.viewCount)}{' '}
-                      views • {dayjs(video.publishedAt).fromNow()}
+                      <span dir="auto">{video.channelTitle}</span> •{' '}
+                      {formatViews(video.viewCount)} views •{' '}
+                      {dayjs(video.publishedAt).fromNow()}
                     </ItemDescription>
                   </ItemContent>
                 </Item>
