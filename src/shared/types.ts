@@ -25,6 +25,7 @@ export interface PlaylistMetadata {
   thumbnails: Thumbnails
   totalVideos: number
   channelTitle: string
+  channelId: string
 }
 
 export interface PlaylistVideo {

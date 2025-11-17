@@ -21,6 +21,7 @@ class YoutubeService {
       description: playlist.snippet.description,
       thumbnails: playlist.snippet.thumbnails,
       channelTitle: playlist.snippet.channelTitle,
+      channelId: playlist.snippet.channelId,
       totalVideos: playlist.contentDetails.itemCount,
     }
   }

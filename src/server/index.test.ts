@@ -91,6 +91,7 @@ describe('Route Handlers', () => {
       description: '',
       thumbnails: {},
       channelTitle: 'Ch',
+      channelId: '1234',
       totalVideos: 1,
     }
     const mockVideosCount = {
@@ -340,6 +341,7 @@ describe('Youtube API Service', () => {
           description: 'A test playlist',
           thumbnails: { default: { url: 'http://img' } },
           channelTitle: 'Test Channel',
+          channelId: '012',
         },
         contentDetails: {
           itemCount: 10,
@@ -359,6 +361,7 @@ describe('Youtube API Service', () => {
         description: 'A test playlist',
         thumbnails: { default: { url: 'http://img' } },
         channelTitle: 'Test Channel',
+        channelId: '012',
         totalVideos: 10,
       })
     })

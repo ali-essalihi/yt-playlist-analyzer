@@ -28,14 +28,22 @@ export default function Overview() {
           unoptimized
         />
         <div className="space-y-2">
-          <div className="scroll-m-20 text-xl font-medium tracking-tight">
+          <a
+            href={`https://www.youtube.com/playlist?list=${playlist.metadata.id}`}
+            className="block scroll-m-20 text-xl font-medium tracking-tight hover:underline"
+            target="_blank"
+          >
             {playlist.metadata.title}
-          </div>
+          </a>
           <div className="text-sm text-secondary-foreground">
             By{' '}
-            <span className="font-medium">
+            <a
+              href={`https://www.youtube.com/channel/${playlist.metadata.channelId}`}
+              className="inline font-medium hover:underline"
+              target="_blank"
+            >
               {playlist.metadata.channelTitle}
-            </span>
+            </a>
           </div>
           <div className="text-xs text-muted-foreground">
             {playlist.metadata.totalVideos} Videos • Created{' '}
